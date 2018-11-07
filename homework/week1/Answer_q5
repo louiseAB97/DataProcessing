@@ -1,0 +1,14 @@
+What is a Branch in Git terms?
+
+Everything done in github by default is performed with a Master branch. 
+This kind of means that you are confident about the files you submit and the choices you have made in your code.
+However, when working on a project and you have several options on how to continue the code, you could set branches at that point. 
+
+I found the following information on githubs introduction guide: https://guides.github.com/introduction/flow/
+" Changes you make on a branch don't affect the master branch, so you're free to experiment and commit changes,
+safe in the knowledge that your branch won't be merged until it's ready to be reviewed by someone you're collaborating with."
+
+
+This will be very useful when working on projects together.
+Every branch must have a descriptive name.
+
