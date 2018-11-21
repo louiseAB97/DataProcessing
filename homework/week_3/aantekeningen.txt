@@ -1,0 +1,28 @@
+
+ForEach op arrays:
+
+  ["A", "B"].forEach(l => console.log(l));
+  // → A
+  // → B
+
+
+Filteren van data:
+
+  console.log(objects.filter(object => object.key == "certain value"));
+
+
+
+Filteren op een waarde en dan data selecteren van een een andere column in deze subset:
+(Pipeline: we start with all scripts, filter out the living (or dead) ones,
+ take the years from those, average them, and round the result.)
+
+    function average(array) {
+      return array.reduce((a, b) => a + b) / array.length;
+    }
+
+    console.log(Math.round(average(
+      SCRIPTS.filter(s => s.living).map(s => s.year))));
+    // → 1188
+    console.log(Math.round(average(
+      SCRIPTS.filter(s => !s.living).map(s => s.year))));
+    // → 188

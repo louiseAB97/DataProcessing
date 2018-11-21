@@ -1,0 +1,26 @@
+
+1 ) Explain the difference between the == operator and the === operator.
+
+The === operator checks if left and right are exactly the same.
+The == also checks if left and right are the same but will be true more often
+as it also considers type coersed outcomes as the same.
+
+
+2) Explain what a closure is. (Note that JavaScript programs use closures very often)
+
+Closure is when a variable is declared as var x = ... , inside of the curly braces of the function.A
+As a result, the variable only exists inside the function, instead of in the whole script.
+
+
+
+3) Explain what higher order functions are.
+
+Functions that have other functions inside them.
+This way you can write functions with “gaps” in them that will be filled later,
+when the function outcome can be calculated.
+
+
+
+4)Explain what a query selector is and give an example line of JavaScript that uses a query selector.
+
+console.log(data.CSSselector). Something with CSS. Not using it this week so answer will be uploaded later.

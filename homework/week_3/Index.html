@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+<title> Louise Buijs,  11018364, purpose: Compare weather in Amsterdam and Maastricht </title>
+</head>
+<body>
+
+  <a href="weer.txt">Link to data</a>
+  <a href="answers.txt">Link to answers</a>
+  <p></p>
+  <q> Ik probeerde dus de vraag te stellen of het weer anders was in een kuststad(Amsterdam) dan
+     in een binnenlandse stad (Maastricht).  Ik heb ongelovelijk veel tijd verspild aan het plotten van beide waardes
+     totdat ik erachter kwam dat de metingen dus hetzelfde voor beide stations....... </q>
+  <p></p>
+
+  <canvas id="myCanvas" width="1095px" height="500px" style="border:1px solid #d3d3d3;">
+  Your browser does not support the HTML5 canvas tag.</canvas>
+
+  <script>
+
+    var fileName = "data.json";
+    var txtFile = new XMLHttpRequest();
+    txtFile.onreadystatechange = function() {
+        if (txtFile.readyState === 4 && txtFile.status == 200) {
+            data = JSON.parse(txtFile.responseText);
+            // responseText contains all data
+            // All functions applied to the data must be called here to prevent asynchronity
+            amsterdam = bigCleanUp(data, "240", "TX")
+            amsX = amsterdam[0]
+            amsY = amsterdam[1]
+            days = amsX.length
+
+            maastricht = bigCleanUp(data, "380", "TX")
+            maasX = maastricht[0]
+            maasY = maastricht[1]
+
+            var c = document.getElementById("myCanvas");
+            var ctx = c.getContext("2d");
+            // draw the  X axis
+            ctx.moveTo(50, 460);
+            ctx.lineTo(980, 460);
+            ctx.stroke();
+            // draw Y axis
+            ctx.beginPath();
+            ctx.moveTo(50, 460);
+            ctx.lineTo(50, 0);
+            ctx.stroke();
+
+            // y scale
+            ctx.fillText("Koud", 10, 50, 50)
+            ctx.fillText("Warm", 10, 400, 50)
+
+            // Plot a line trough all transformed x,y pairs of Amsterdam
+            ctx.beginPath();
+            ctx.strokeStyle = "blue";
+            for(i=0; i<days; i++){
+              ctx.moveTo(amsX[i], amsY[i]);
+              ctx.lineTo(amsX[i+1], amsY[i+1]);
+            }
+            ctx.stroke();
+
+            // Plot line for Maastricht
+            ctx.beginPath();
+            ctx.strokeStyle = "black";
+            for(j=0; j<days; j++){
+              ctx.moveTo(maasX[j], maasY[j]);
+              ctx.lineTo(maasX[j+1], maasY[j+1]);
+            }
+            ctx.stroke();
+
+            // Create an eyecatching title
+            ctx.font="20px Georgia";
+            var gradient = ctx.createLinearGradient(0, 0, c.width, 0);
+            gradient.addColorStop("0.3","blue");
+            gradient.addColorStop("0.45","red");
+            gradient.addColorStop("0.85","green");
+            ctx.fillStyle = gradient;
+            ctx.fillText("Koudheid in 2018 in Amsterdam and Maastricht",300,40);
+
+            // list dates on X-axis
+            binwidth = (c.width / 14)
+            var bin = 0.75 * binwidth
+            months = ["nov", "dec", "jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sept", "okt",]
+            months.forEach(function(month){
+              ctx.font="14px Georgia";
+              ctx.fillText(("1 " + month), bin, 450, 50)
+              bin += binwidth
+            })
+        }
+    }
+    txtFile.open("GET", fileName);
+    txtFile.send();
+
+
+
+    function bigCleanUp(data, station, measurement){
+      xyValues = getxyValues(data, station, measurement);
+      xValues = xyValues[0];
+      yValues = xyValues[1];
+
+      screenCoordinatesX = [50, 950]
+      screenCoordinatesY = [50, 400]
+
+      milliseconds = toSecondsXdata(xValues)
+      domainX = getDomain(milliseconds)
+      domainY = getDomain(yValues)
+      rangeX = getRange(screenCoordinatesX)
+      rangeY = getRange(screenCoordinatesY)
+
+      // final contains all the data transformed to the scale of the canvas
+      finalY = createTransform(domainY, rangeY, yValues)
+      finalX = createTransform(domainX, rangeX, milliseconds)
+
+      return([finalX, finalY]);
+    }
+
+
+
+    function getxyValues(data, station, measurement){
+      dataStation = data[station];
+      // sub-object for station of choice. YYYYMMDD: {"FHX":__, "DR":___, "TX":__}
+      dates = Object.keys(dataStation)
+      // array containing all dates (YYYYMMDD)
+      yVals = []
+      // array to store all measurements in.  (Y-axis in plot?)
+
+      dates.forEach(function(date){
+        measurements = dataStation[date]
+        measurementChosen = measurements[measurement]
+        yVals.push(measurementChosen)
+      })
+      return([dates, yVals]);
+    }
+
+
+
+    function toSecondsXdata(xValues){
+      // This function transforms time into milliseconds as usefull x-axis unit
+      transformedXmilliseconds = []
+      xValues.forEach(function(value){
+        year = value.slice(0,4)
+        month = value.slice(4,6)
+        day = value.slice(6,8)
+        date = new Date(year, month, day)
+        milliseconds = date.getTime()
+        // returns number of milliseconds
+        transformedXmilliseconds.push(milliseconds)
+      })
+      return(transformedXmilliseconds);
+    }
+
+
+
+  function getDomain(values){
+    data_min = Math.min.apply(null, values)
+    data_max = Math.max.apply(null, values)
+    domain = [data_min, data_max]
+    return(domain);
+  }
+
+
+
+  function getRange(screenCoordinates){
+    screen_min = screenCoordinates[0]
+    screen_max = screenCoordinates[1]
+    range = [screen_min, screen_max]
+    return(range);
+  }
+
+
+
+  function createTransform(domain, range, datapoints){
+    // This function transforms
+
+      var domain_min = domain[0]
+      var domain_max = domain[1]
+      var range_min = range[0]
+      var range_max = range[1]
+
+      // formulas to calculate the alpha and the beta
+     	var alpha = (range_max - range_min) / (domain_max - domain_min);
+      var beta = range_max - alpha * domain_max;
+
+      transformed = []
+      datapoints.forEach(function(x){
+        final = alpha * x + beta;
+        transformed.push(final);
+      })
+      return(transformed);
+  }
+
+
+
+  </script>
+
+</body>
+</html>
